@@ -15,8 +15,10 @@ HEADERS = {
     'Authorization': f'apiKey {API_KEY}',
     'Content-Type': 'application/json'
 }
+MAX_RETRIES = 3
+DELAY_BETWEEN_RETRIES = 2
 TEMPLATE_FOLDER_ID = "https://repo.metadatacenter.orgx/folders/6afcac2e-1b82-4484-a3f6-2327989ea698"  # YOUR FOLDER ID HERE
-TOTAL_TEMPLATES = 60000
+TOTAL_TEMPLATES = 10000
 
 
 def read_template_from_fs():
@@ -41,8 +43,18 @@ def create_templates(template_data):
 
         template_data['schema:name'] = f"Test Template {i}"
         encoded_folder_id = urllib.parse.quote_plus(TEMPLATE_FOLDER_ID)
-        response = requests.post(f"{BASE_URL}templates?folder_id={encoded_folder_id}", headers=HEADERS, json=template_data, verify=False)
-        response.raise_for_status()
+
+        for attempt in range(MAX_RETRIES):
+            try:
+                response = requests.post(f"{BASE_URL}templates?folder_id={encoded_folder_id}", headers=HEADERS, json=template_data, verify=False)
+                response.raise_for_status()
+                break
+            except requests.exceptions.RequestException as err:
+                print(f"Error on template {i}: {err}. Attempt {attempt + 1}/{MAX_RETRIES}.")
+                if attempt < MAX_RETRIES - 1:
+                    time.sleep(DELAY_BETWEEN_RETRIES)
+                else:
+                    print(f"Failed to create template {i} after {MAX_RETRIES} attempts.")
 
         # Every 20 templates, report the expected end time
         if i % 20 == 0:
