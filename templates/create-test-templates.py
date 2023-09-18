@@ -10,15 +10,16 @@ requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.
 
 CEDAR_HOST = os.environ.get('CEDAR_HOST')
 BASE_URL = f'https://resource.{CEDAR_HOST}/'
-API_KEY = os.environ.get('CEDAR_ADMIN_USER_API_KEY')
+API_KEY = os.environ.get('CEDAR_TEST_USER_API_KEY')
+TARGET_FOLDER_ID = os.environ.get('CEDAR_TARGET_FOLDER_ID')
 HEADERS = {
     'Authorization': f'apiKey {API_KEY}',
     'Content-Type': 'application/json'
 }
 MAX_RETRIES = 3
 DELAY_BETWEEN_RETRIES = 2
-TEMPLATE_FOLDER_ID = "https://repo.metadatacenter.orgx/folders/6afcac2e-1b82-4484-a3f6-2327989ea698"  # YOUR FOLDER ID HERE
-TOTAL_TEMPLATES = 10000
+BATCH_SIZE = 20
+TOTAL_TEMPLATES = 50000
 
 
 def read_template_from_fs():
@@ -28,21 +29,23 @@ def read_template_from_fs():
 
 def create_templates(template_data):
     start_time = time.time()
+    execution_times = []
 
     formatted_start_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(start_time))
     print(f"Start time: {formatted_start_time}\n")
 
-    for i in range(1, TOTAL_TEMPLATES + 1):
+    for i in range(0, TOTAL_TEMPLATES):
         elapsed_time = time.time() - start_time
-        estimated_total_time = elapsed_time * TOTAL_TEMPLATES / i
-        remaining_time = estimated_total_time - elapsed_time
-
-        if i % 20 == 0:
-            print(
-                f"Generating template {i}/{TOTAL_TEMPLATES}. Estimated time left: {int(remaining_time // 60)} minutes {int(remaining_time % 60)} seconds.")
+        if i > 0:
+            estimated_total_time = elapsed_time * TOTAL_TEMPLATES / i
+            remaining_time = estimated_total_time - elapsed_time
+        else:
+            estimated_total_time = 0
+            remaining_time = 0
+        template_start_time = time.time()
 
         template_data['schema:name'] = f"Test Template {i}"
-        encoded_folder_id = urllib.parse.quote_plus(TEMPLATE_FOLDER_ID)
+        encoded_folder_id = urllib.parse.quote_plus(TARGET_FOLDER_ID)
 
         for attempt in range(MAX_RETRIES):
             try:
@@ -56,11 +59,22 @@ def create_templates(template_data):
                 else:
                     print(f"Failed to create template {i} after {MAX_RETRIES} attempts.")
 
-        # Every 20 templates, report the expected end time
-        if i % 20 == 0:
+        template_end_time = time.time()
+        execution_times.append(template_end_time - template_start_time)
+
+        # Report the times
+        if i % BATCH_SIZE == 0 and i > 0:
+            print('-' * 80)
+            print(f"Generated template {i}/{TOTAL_TEMPLATES}. Estimated time left: {int(remaining_time // 60)} minutes {int(remaining_time % 60)} seconds.")
+            last_batch_average = sum(execution_times[-BATCH_SIZE:]) / BATCH_SIZE if execution_times else 0
+            overall_average = sum(execution_times) / len(execution_times) if execution_times else 0
+
+            print(f"\nAverage execution time for the last batch of {BATCH_SIZE}: {last_batch_average:.2f} seconds.")
+            print(f"Overall average execution time:                  {overall_average:.2f} seconds.")
+
             expected_end_time = time.time() + remaining_time
             formatted_expected_end_time = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(expected_end_time))
-            print(f"\nExpected end time after {i} templates: {formatted_expected_end_time}\n")
+            print(f"\nExpected end time after {i} templates: {formatted_expected_end_time}")
 
     # At the end, report the start time, the end time, the running time, and the average time per template
     end_time = time.time()
