@@ -21,3 +21,7 @@ release.properties
 pom.xml.versionsBackup
 
 dependency-reduced-pom.xml
+
+/.idea
+__pycache__
+/.venv

@@ -16,7 +16,7 @@ HEADERS = {
     'Authorization': f'apiKey {API_KEY}',
     'Content-Type': 'application/json'
 }
-TEMPLATE_FOLDER_ID = "https://repo.metadatacenter.orgx/folders/6afcac2e-1b82-4484-a3f6-2327989ea698"  # YOUR FOLDER ID HERE
+TEMPLATE_FOLDER_ID = "https://repo.metadatacenter.orgx/folders/XYZ"  # YOUR FOLDER ID HERE
 TOTAL_TEMPLATES = 100
 MAX_RANDOM_CATEGORY_COUNT = 5
 
