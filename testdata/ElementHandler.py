@@ -1,4 +1,4 @@
-from org.metadatacenter.testdata.ResourceHandler import ResourceHandler
+from testdata.ResourceHandler import ResourceHandler
 
 
 class ElementHandler(ResourceHandler):

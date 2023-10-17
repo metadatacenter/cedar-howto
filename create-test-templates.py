@@ -1,4 +1,4 @@
-from org.metadatacenter.testdata.TemplateHandler import TemplateHandler
+from testdata.TemplateHandler import TemplateHandler
 
 if __name__ == "__main__":
     handler = TemplateHandler()
