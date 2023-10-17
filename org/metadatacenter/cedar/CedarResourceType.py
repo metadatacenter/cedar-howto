@@ -27,6 +27,11 @@ class CedarResourceType(Enum):
         'prefix': 'template-instances',
         'atType': None
     }
+    CATEGORY = {
+        'value': 'category',
+        'prefix': 'categories',
+        'atType': None
+    }
     NONE = {
         'value': None,
         'prefix': None,
