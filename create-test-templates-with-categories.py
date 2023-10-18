@@ -37,7 +37,7 @@ def get_all_categories():
 
 
 def read_template_from_fs():
-    with open('empty-template.json', 'r') as file:
+    with open('input-files/empty-template-unsaved.json', 'r') as file:
         return json.load(file)
 
 
